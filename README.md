@@ -1,1 +1,1 @@
-# multitask
+#[ModKit Wiki](../../wiki)

@@ -694,7 +694,7 @@ public class MultitaskScript : MonoBehaviour {
         matchbar[1].material = ledcols[k + 1];
         yield return new WaitForSeconds(0.1f);
         matchbar[1].material = ledcols[0];
-        match[d] = Match(k);
+        match[d] = Match(d);
         if(d < 10)
             active[3][(5 * m) + k] = false;
         if (active[0][3])

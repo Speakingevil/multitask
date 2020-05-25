@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Linq;
 using UnityEngine;
@@ -47,6 +47,7 @@ public class MultitaskScript : MonoBehaviour {
     private int matchcol;
     private static bool finalchoice;
     private bool final;
+    private bool start;
 
     private static int moduleIDCounter;
     private int moduleID;
@@ -107,6 +108,9 @@ public class MultitaskScript : MonoBehaviour {
             "Forget Us Not",
             "Organization",
             "Forget Perspective",
+            "Ubermodule",
+            "14",
+            "RPS Judging",
             "The Very Annoying Button",
             "Forget Me Later",
             "Multitask",
@@ -147,6 +151,10 @@ public class MultitaskScript : MonoBehaviour {
             {
                 final = true;
                 StopAllCoroutines();
+                if (!start)
+                {
+                    StartCoroutine(HatchMove(0, true));
+                }
                 StartCoroutine(Manager());
             }
             yield return new WaitForSeconds(0.5f);
@@ -308,6 +316,8 @@ public class MultitaskScript : MonoBehaviour {
             }
             yield return null;
         }
+        if (!start)
+            start = true;
         if (!up)
         {
             switch (hatch)
@@ -371,7 +381,7 @@ public class MultitaskScript : MonoBehaviour {
             case 2:
                 while (active[0][2])
                 {
-                    while (hatchmove[2])
+                    while (hatchmove[2] || active[2].Where(a => a).Count() > 6)
                     {
                         yield return null;
                     }
@@ -497,15 +507,15 @@ public class MultitaskScript : MonoBehaviour {
                     break;
                 default:
                     if (needleangle < -60)
-                        needleangle -= 0.9f;
+                        needleangle -= 0.7f;
                     else if (needleangle < -30)
-                        needleangle -= 0.6f;
+                        needleangle -= 0.5f;
                     else if (needleangle < 0)
                         needleangle -= 0.3f;
                     else if (needleangle > 60)
-                        needleangle += 0.9f;
+                        needleangle += 0.7f;
                     else if (needleangle > 30)
-                        needleangle += 0.6f;
+                        needleangle += 0.5f;
                     else
                         needleangle += 0.3f;
                     break;
@@ -694,9 +704,9 @@ public class MultitaskScript : MonoBehaviour {
         matchbar[1].material = ledcols[k + 1];
         yield return new WaitForSeconds(0.1f);
         matchbar[1].material = ledcols[0];
-        match[d] = Match(d);
         if(d < 10)
             active[3][(5 * m) + k] = false;
+        match[d] = Match(d);
         if (active[0][3])
         {
             if (matchcol != k)

@@ -45,15 +45,22 @@ public class MultitaskScript : MonoBehaviour {
     private int lastactive = 2;
     private int arrowled = 2;
     private int matchcol;
-    private static bool finalchoice;
-    private bool final;
+
+    private bool[] final = new bool[4];
     private bool start;
 
-    private static int moduleIDCounter;
+    private static int moduleIDCounter = 1;
+    private static int minmoduleID;
+    private static bool stagger;
     private int moduleID;
 
     void Awake()
     {
+        if (!stagger)
+        {
+            stagger = true;
+            minmoduleID = moduleIDCounter;
+        }
         moduleID = moduleIDCounter++;
         module.OnActivate = Activate;      
         for (int i = 0; i < 10; i++)
@@ -86,33 +93,44 @@ public class MultitaskScript : MonoBehaviour {
 
     private void Activate()
     {
-        finalchoice = false;
         exempt = GetComponent<KMBossModule>().GetIgnoredModules("Multitask", new string[]
         {
-            "Forget Me Not",
-            "Forget Everything",
-            "Forget This",
-            "Forget Infinity",
-            "Forget Them All",
-            "Simon's Stages",
-            "Turn The Key",
-            "The Time Keeper",
-            "Bamboozling Time Keeper",
-            "Timing is Everything",
-            "Purgatory",
-            "Hogwarts",
-            "Souvenir",
-            "The Troll",
-            "Tallordered Keys",
-            "Forget Enigma",
-            "Forget Us Not",
-            "Organization",
-            "Forget Perspective",
-            "Ubermodule",
             "14",
-            "RPS Judging",
-            "The Very Annoying Button",
+            "Bamboozling Time Keeper",
+            "Brainf---",
+            "Divided Squares",
+            "Forget Enigma",
+            "Forget Everything",
+            "Forget It Not",
             "Forget Me Later",
+            "Forget Me Not",
+            "Forget Perspective",
+            "Forget The Colors",
+            "Forget Them All",
+            "Forget This",
+            "Forget Us Not",
+            "Hogwarts",
+            "Iconic",
+            "Organization",
+            "Pressure",
+            "Purgatory",
+            "Random Access Memory",
+            "RPS Judging",
+            "Simon Forgets",
+            "Simon's Stages",
+            "Souvenir",
+            "Tallordered Keys",
+            "The Digits",
+            "The Heart",
+            "The Swan",
+            "The Time Keeper",
+            "The Troll",
+            "The Twin",
+            "The Very Annoying Button",
+            "Timing is Everything",
+            "Turn The Key",
+            "Ultimate Custom Night",
+            "Übermodule",
             "Multitask",
             "The Task Master",
             "Simon Supervises",
@@ -139,17 +157,18 @@ public class MultitaskScript : MonoBehaviour {
             obj.SetActive(false);
         foreach (GameObject obj in matchobj)
             obj.SetActive(false);
+        stagger = false;
     }
 
     private IEnumerator Simul()
     {
-        while (!final)
+        while (!final.Contains(true))
         {
             while (simul < Mathf.CeilToInt(4f * bomb.GetSolvedModuleNames().Count() / modnum))
                 simul++;
             if (simul > 3)
             {
-                final = true;
+                final[Random.Range(0, 4)] = true;
                 StopAllCoroutines();
                 if (!start)
                 {
@@ -163,7 +182,7 @@ public class MultitaskScript : MonoBehaviour {
 
     private IEnumerator Manager()
     {
-        while (!final)
+        while (!final.Contains(true))
         {
             if (active[0].Where(b => b).Count() < simul)
             {
@@ -181,7 +200,6 @@ public class MultitaskScript : MonoBehaviour {
                     tasks[task] = Task(task);
                 active[0][task] = true;
                 hatchmove[task] = true;
-                yield return new WaitForSeconds(Random.Range(5f, 15f));
                 StartCoroutine(HatchMove(task + 1, true));
                 yield return new WaitForSeconds(1);
                 int timeset = Random.Range(20, 50);
@@ -242,10 +260,7 @@ public class MultitaskScript : MonoBehaviour {
             match[i] = Match(i);
         }
         Debug.LogFormat("[Multitask #{0}] Entering standby for final phase", moduleID);
-        yield return new WaitForSeconds(Random.Range(2f, 12f));
-        while (finalchoice)
-            yield return new WaitForSeconds(Random.Range(5f, 10f));
-        finalchoice = true;
+        yield return new WaitForSeconds((75 * (moduleID - minmoduleID)) + 5);
         Debug.LogFormat("[Multitask #{0}] Final phase activated at {1}", moduleID, bomb.GetFormattedTime());
         Audio.PlaySoundAtTransform("HatchOpen", transform);
         for (int i = 0; i < 4; i++)
@@ -268,7 +283,6 @@ public class MultitaskScript : MonoBehaviour {
         StartCoroutine(HatchMove(0, false));
         timers[0].text = "GG";
         timers[0].color = new Color32(0, 255, 0, 255);
-        finalchoice = false;
         module.HandlePass();
     }
 
@@ -278,7 +292,7 @@ public class MultitaskScript : MonoBehaviour {
             hatchmove[hatch - 1] = true;
         if (up)
         {
-            if(moduleID + 1 == moduleIDCounter && !final)
+            if(moduleID + 1 == moduleIDCounter && !final.Contains(true))
                  Audio.PlaySoundAtTransform("HatchOpen", transform);
             switch (hatch)
             {
@@ -318,6 +332,8 @@ public class MultitaskScript : MonoBehaviour {
         }
         if (!start)
             start = true;
+        if(hatch > 0)
+            hatchmove[hatch - 1] = false;
         if (!up)
         {
             switch (hatch)
@@ -352,11 +368,10 @@ public class MultitaskScript : MonoBehaviour {
             }
             if (hatch > 0)
             {
+                yield return new WaitForSeconds(Random.Range(15f, 30f));
                 active[0][hatch - 1] = false;
             }
         }
-        if (hatch > 0)
-            hatchmove[hatch - 1] = false;
     }
 
     private IEnumerator Task(int t)
@@ -366,7 +381,7 @@ public class MultitaskScript : MonoBehaviour {
             case 1:
                 while (active[0][1])
                 {
-                    while (hatchmove[1] || active[1].Where(a => a).Count() > (final ? 6 : 3))
+                    while (hatchmove[1] || active[1].Where(a => a).Count() > (final[1] ? 6 : 3))
                     {
                         yield return null;
                     }
@@ -409,7 +424,7 @@ public class MultitaskScript : MonoBehaviour {
                             matchrand[1] += 5;
                         StartCoroutine(match[matchrand[1]]);
                     }
-                    yield return new WaitForSeconds(matchrand[0] == 0 ? (final ? 2.4f : 3.2f) : final ? 1.2f : 1.6f);
+                    yield return new WaitForSeconds(matchrand[0] == 0 ? (final[3] ? 2.4f : 3.2f) : final[3] ? 1.2f : 1.6f);
                 }
                 break;
         }
@@ -423,14 +438,13 @@ public class MultitaskScript : MonoBehaviour {
         }
         for (int i = time; i > -1; i--)
         {
-            if (!final)
+            if (!final.Contains(true))
                 timers[t + 1].text = i < 10 ? "0" + i.ToString() : i.ToString();
             yield return new WaitForSeconds(1);
         }      
         timers[t + 1].text = string.Empty;
         StopCoroutine(tasks[t]);
-        active[0][t] = false;
-        if (!final)
+        if (!final.Contains(true))
         {
             Audio.PlaySoundAtTransform("InputCorrect", transform);
             Debug.LogFormat("[Multitask #{0}] OK: {1} deactivated", moduleID, new string[] { "Pressure Gauge", "Avoidance", "Selection Grid", "Signal Jammer" }[t]);
@@ -524,7 +538,7 @@ public class MultitaskScript : MonoBehaviour {
             {
                 module.HandleStrike();
                 Debug.LogFormat("[Multitask #{0}] Oops: Pressure too {1}", moduleID, needleangle > 0 ? "high" : "low");
-                if (!final)
+                if (!final.Contains(true))
                 {
                     timers[1].text = string.Empty;
                     StopCoroutine(countdowns[1]);
@@ -534,7 +548,7 @@ public class MultitaskScript : MonoBehaviour {
                 else
                     needlereset = true;
             }
-            yield return new WaitForSeconds(final ? 0.03f : 0.04f);
+            yield return new WaitForSeconds(final[0] ? 0.03f : 0.04f);
         }
     }
 
@@ -577,12 +591,11 @@ public class MultitaskScript : MonoBehaviour {
                 if (i > 4)
                     dodgeleds[i].material = ledcols[0];
             }
-            if (!final)
+            if (!final.Contains(true))
             {
                 StopCoroutine(tasks[1]);
                 StopCoroutine(countdowns[2]);
-                timers[2].text = string.Empty;
-                active[0][1] = false;                
+                timers[2].text = string.Empty;              
                 StartCoroutine(HatchMove(2, false));
             }
         }
@@ -616,7 +629,7 @@ public class MultitaskScript : MonoBehaviour {
     {
         active[2][g] = true;
         Audio.PlaySoundAtTransform("Alert", transform);
-        float waittime = final ? 2 : 2.4f;
+        float waittime = final[2] ? 2 : 2.4f;
         gridleds[g].material = ledcols[5];
         for (int i = 0; i < 5; i++)
         {
@@ -636,12 +649,11 @@ public class MultitaskScript : MonoBehaviour {
             }
             grid[i] = Grid(i);
         }
-        if (!final)
+        if (!final.Contains(true))
         {
             StopCoroutine(tasks[2]);
             StopCoroutine(countdowns[3]);
-            timers[3].text = string.Empty;
-            active[0][2] = false;          
+            timers[3].text = string.Empty;         
             StartCoroutine(HatchMove(3, false));
         }
     }
@@ -673,12 +685,11 @@ public class MultitaskScript : MonoBehaviour {
                     }
                     grid[j] = Grid(j);
                 }
-                if (!final)
+                if (!final.Contains(true))
                 {
                     StopCoroutine(tasks[2]);
                     StopCoroutine(countdowns[3]);
-                    timers[3].text = string.Empty;
-                    active[0][2] = false;                  
+                    timers[3].text = string.Empty;                
                     StartCoroutine(HatchMove(3, false));
                 }
             }
@@ -698,7 +709,7 @@ public class MultitaskScript : MonoBehaviour {
                 matchleds[(5 * k) + i - 1].material = ledcols[0];
             if (active[0][3])
                 matchleds[(5 * k) + i].material = ledcols[k + 1];
-            yield return new WaitForSeconds(final ? 1.2f : 1.6f);
+            yield return new WaitForSeconds(final[3] ? 1.2f : 1.6f);
         }
         matchleds[(5 * k) + 4].material = ledcols[0];
         matchbar[1].material = ledcols[k + 1];
@@ -726,12 +737,11 @@ public class MultitaskScript : MonoBehaviour {
                          active[3][i] = false;
                     match[i] = Match(i);
                 }
-                if (!final)
+                if (!final.Contains(true))
                 {
                     StopCoroutine(tasks[3]);
                     StopCoroutine(countdowns[4]);
                     timers[4].text = string.Empty;
-                    active[0][3] = false;
                     StartCoroutine(HatchMove(4, false));
                 }
             }
@@ -755,13 +765,9 @@ public class MultitaskScript : MonoBehaviour {
 
     private IEnumerator DoneSoSoon()
     {
-        yield return new WaitForSeconds(Random.Range(2f, 12f));
-        while (finalchoice)
-            yield return new WaitForSeconds(Random.Range(5f, 10f));
-        finalchoice = true;
+        yield return new WaitForSeconds(5);
         StartCoroutine(HatchMove(0, false));
         yield return new WaitForSeconds(2);
-        finalchoice = false;
         timers[0].text = "OH";
         timers[0].color = new Color32(0, 255, 0, 255);
         module.HandlePass();

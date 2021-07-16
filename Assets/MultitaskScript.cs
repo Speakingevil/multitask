@@ -64,6 +64,47 @@ public class MultitaskScript : MonoBehaviour {
     private float speedInverse = 1;
     private float timerMultiplier = 1;
 
+    #region ModSettings
+    class MultitaskSettings
+    {
+        public float speedMultiplier = 1;
+        public float timerMultiplier = 1;
+    }
+    MultitaskSettings settings = new MultitaskSettings();
+    private static Dictionary<string, object>[] TweaksEditorSettings = new Dictionary<string, object>[]
+    {
+          new Dictionary<string, object>
+          {
+            { "Filename", "MultitaskSettings.json"},
+            { "Name", "Multitask" },
+            { "Listings", new List<Dictionary<string, object>>
+                {
+                  new Dictionary<string, object>
+                  {
+                    { "Key", "speedMultiplier" },
+                    { "Text", "Multiplier altering the speed at which the modules function."}
+                  },
+                  new Dictionary<string, object>
+                  {
+                    { "Key", "timerMultiplier" },
+                    { "Text", "Multiplier altering the length of the module timers.."}
+                  }
+                }
+            }
+          }
+    };
+    void SetSettings()
+    {
+        if (settings.speedMultiplier == 0)
+            speedMultiplier = 1;
+        else speedMultiplier = settings.speedMultiplier;
+        speedInverse = 1f / settings.speedMultiplier;
+        if (settings.timerMultiplier == 0)
+            timerMultiplier = 1;
+        else timerMultiplier = settings.timerMultiplier;
+    }
+    #endregion
+
     void Awake()
     {
         if (!stagger)
@@ -99,6 +140,11 @@ public class MultitaskScript : MonoBehaviour {
         needlebuttons[1].OnInteractEnded += delegate () { Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.BigButtonPress, transform); needleup = 0; };
         arrowbuttons[0].OnInteract += delegate () { ArrowPress(true); return false; };
         arrowbuttons[1].OnInteract += delegate () { ArrowPress(false); return false; };
+
+        ModConfig<MultitaskSettings> modConfig = new ModConfig<MultitaskSettings>("MultitaskSettings");
+        settings = modConfig.Read();
+        modConfig.Write(settings);
+        SetSettings();
     }
 
     private void Activate()
@@ -168,13 +214,14 @@ public class MultitaskScript : MonoBehaviour {
         foreach (GameObject obj in matchobj)
             obj.SetActive(false);
         stagger = false;
-        if (TwitchPlaysActive)
+        if (TwitchPlaysActive && settings.speedMultiplier == 1 && settings.timerMultiplier == 1)
         {
-            speedMultiplier = 0.333f;
-            speedInverse = 1f / speedMultiplier;
-            timerMultiplier = 1.5f;
-            timers[0].transform.localScale = new Vector3(0.0012f, 0.001f, 1);
+            settings.speedMultiplier = 0.25f; //Default TP settings.
+            settings.timerMultiplier = 1.5f;
+            SetSettings();
         }
+        if (70 * timerMultiplier >= 100)
+            timers[0].transform.localScale = new Vector3(0.0012f, 0.001f, 1);
     }
 
     private IEnumerator Simul()
@@ -319,6 +366,7 @@ public class MultitaskScript : MonoBehaviour {
         {
             if(moduleID + 1 == moduleIDCounter && !final.Contains(true))
                  Audio.PlaySoundAtTransform("HatchOpen", transform);
+            yield return null;
             switch (hatch)
             {
                 case 1:
@@ -807,25 +855,41 @@ public class MultitaskScript : MonoBehaviour {
         string[] coords = { "A1", "B1", "C1", "D1", "E1", "A2", "B2", "C2", "D2", "E2", "A3", "B3", "C3", "D3", "E3", "A4", "B4", "C4", "D4", "E4", "A5", "B5", "C5", "D5", "E5" };
         command = command.Trim().ToUpperInvariant();
         List<string> parameters = command.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-        if (command == "LEFT")
+        if (command == "LEFT" || command == "L")
         {
+            if (!active[0].Any(x => x))
+                yield break;
             yield return null;
             needlebuttons[0].OnInteract();
-            while (needleangle > 0)
+            while (true)
+            {
+                if (needleangle <= 0 || !active[0].Any(x => x))
+                {
+                    needlebuttons[0].OnInteractEnded();
+                    needleup = 0;
+                    yield break; 
+                }
                 yield return null;
-            needlebuttons[0].OnInteractEnded();
-            needleup = 0;
+            }
         }
-        else if (command == "RIGHT")
+        else if (command == "RIGHT" || command == "R")
         {
+            if (!active[0].Any(x => x))
+                yield break;
             yield return null;
             needlebuttons[1].OnInteract();
-            while (needleangle < 0)
+            while (true)
+            {
+                if (needleangle >= 0 || !active[0].Any(x => x))
+                {
+                    needlebuttons[1].OnInteractEnded();
+                    needleup = 0;
+                    yield break;
+                }
                 yield return null;
-            needlebuttons[1].OnInteractEnded();
-            needleup = 0;
+            }
         }
-        else if (Regex.IsMatch(command, @"^(UP|DOWN)\s+[1-4]$"))
+        else if (Regex.IsMatch(command, @"^(U(?:P)?|D(?:OWN)?)\s+[1-4]$"))
         {
             yield return null;
             for (int i = 0; i < command.Last() - '0'; i++)
@@ -834,10 +898,12 @@ public class MultitaskScript : MonoBehaviour {
                 yield return new WaitForSeconds(0.1f);
             }
         }
-        else if (Regex.IsMatch(command, @"^PRESS(\s+[A-E][1-5])+$"))
+        else if (Regex.IsMatch(command, @"^(?:P(?:RESS)?\s+)?(\s*[A-E][1-5])+$"))
         {
+            if (!active[2].Any(x => x))
+                yield break;
             yield return null;
-            foreach (string coord in parameters.Skip(1))
+            foreach (string coord in parameters.Where(x => coords.Contains(x)))
             {
                 gridbuttons[Array.IndexOf(coords, coord)].OnInteract();
                 yield return new WaitForSeconds(0.1f);
@@ -853,6 +919,8 @@ public class MultitaskScript : MonoBehaviour {
 
     void TwitchHandleForcedSolve()
     { //If we set the return of the autosolve method to void, it'll get called instantly upon running !solvebomb. This will avoid multitask accumulating strikes if solvebomb is ran without.
+        settings.speedMultiplier = 3; //Just for funsies. Sets the timer to triple speed for the autosolver
+        SetSettings();
         StartCoroutine(BeginAutosolve());
     }
     IEnumerator BeginAutosolve()
@@ -932,7 +1000,7 @@ public class MultitaskScript : MonoBehaviour {
     {
         while (!moduleSolved)
         {
-            while (!active[3].Any(x => x))
+            while (!active[0].Any(x => x))
                 yield return null;
             int[] ledPositions = Enumerable.Repeat(-1, 5).ToArray();
             for (int i = 0; i < 5; i++)
@@ -945,6 +1013,5 @@ public class MultitaskScript : MonoBehaviour {
                 matchbuttons[highestPriority].OnInteract(); //Press the button whose signal is the closest. The closest (maximum) value goes to the end of the orderby.
         }
     }
-
 
 }

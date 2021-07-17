@@ -27,6 +27,7 @@ public class MultitaskScript : MonoBehaviour {
     public Renderer[] matchbar;
     public Material[] ledcols;
     public Material[] onebit;
+    public Material glowGray;
     public TextMesh[] timers;
 
     private int modnum;
@@ -216,9 +217,15 @@ public class MultitaskScript : MonoBehaviour {
         stagger = false;
         if (TwitchPlaysActive && settings.speedMultiplier == 1 && settings.timerMultiplier == 1)
         {
-            settings.speedMultiplier = 0.25f; //Default TP settings.
-            settings.timerMultiplier = 1.5f;
-            SetSettings();
+            speedMultiplier = 0.25f; //Default TP settings.
+            speedInverse = 4;
+            timerMultiplier = 1.5f;
+            for (int i = 0; i < 6; i++) 
+                ledcols[i] = new Material(ledcols[i]) { shader = Shader.Find("Unlit/Color") };
+            for (int i = 0; i < 2; i++)
+                onebit[i] = new Material(onebit[i]) { shader = Shader.Find("Unlit/Color") };
+            foreach (Renderer rn in gridleds)
+                rn.transform.parent.gameObject.GetComponent<MeshRenderer>().material = glowGray;
         }
         if (70 * timerMultiplier >= 100)
             timers[0].transform.localScale = new Vector3(0.0012f, 0.001f, 1);
@@ -900,16 +907,16 @@ public class MultitaskScript : MonoBehaviour {
         }
         else if (Regex.IsMatch(command, @"^(?:P(?:RESS)?\s+)?(\s*[A-E][1-5])+$"))
         {
-            if (!active[2].Any(x => x))
-                yield break;
             yield return null;
             foreach (string coord in parameters.Where(x => coords.Contains(x)))
             {
+                if (!active[2].Any(x => x))
+                    yield break;
                 gridbuttons[Array.IndexOf(coords, coord)].OnInteract();
                 yield return new WaitForSeconds(0.1f);
             }
         }
-        else if (Regex.IsMatch(command, @"^PRESS\s+[1-5]$"))
+        else if (Regex.IsMatch(command, @"^(?:P(?:RESS)?\s+)?[1-5]$"))
         {
             yield return null;
             matchbuttons[command.Last() - '1'].OnInteract();
@@ -919,8 +926,8 @@ public class MultitaskScript : MonoBehaviour {
 
     void TwitchHandleForcedSolve()
     { //If we set the return of the autosolve method to void, it'll get called instantly upon running !solvebomb. This will avoid multitask accumulating strikes if solvebomb is ran without.
-        settings.speedMultiplier = 3; //Just for funsies. Sets the timer to triple speed for the autosolver
-        SetSettings();
+        speedMultiplier = 3; //Just for funsies. Sets the timer to triple speed for the autosolver
+        speedInverse = 0.333f;
         StartCoroutine(BeginAutosolve());
     }
     IEnumerator BeginAutosolve()
@@ -975,6 +982,8 @@ public class MultitaskScript : MonoBehaviour {
             int targetPos = Array.IndexOf(priorities, priorities.Max());
             while (arrowled != targetPos)
             {
+                if (priorities[arrowled + (arrowled > targetPos ? -1 : 1)] == 1 && priorities[arrowled] != 1) //Do not try to move into a space which has a red arrow. This might strike.
+                    break;
                 yield return new WaitForSeconds(0.1f);
                 arrowbuttons[arrowled > targetPos ? 0 : 1].OnInteract();
             }

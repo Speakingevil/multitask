@@ -18193,6 +18193,7 @@ MonoBehaviour:
   onebit:
   - {fileID: 2100000, guid: ef5a0709d5368a14ab4de3ee0753cc9d, type: 2}
   - {fileID: 2100000, guid: 02aadfecd2da1de4fb0706dc40720ee6, type: 2}
+  glowGray: {fileID: 2100000, guid: d5aa75a60884001498633eaa80cfc5c4, type: 2}
   timers:
   - {fileID: 102203469788084246}
   - {fileID: 102908485344275280}

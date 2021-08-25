@@ -64,6 +64,7 @@ public class MultitaskScript : MonoBehaviour {
     private float speedMultiplier = 1;
     private float speedInverse = 1;
     private float timerMultiplier = 1;
+    private bool disablingNeedle;
 
     #region ModSettings
     class MultitaskSettings
@@ -377,6 +378,7 @@ public class MultitaskScript : MonoBehaviour {
             switch (hatch)
             {
                 case 1:
+                    disablingNeedle = false;
                     foreach (GameObject obj in needleobj)
                         obj.SetActive(true);
                     break;
@@ -419,6 +421,8 @@ public class MultitaskScript : MonoBehaviour {
             switch (hatch)
             {
                 case 1:
+                    disablingNeedle = true;
+                    yield return new WaitForSeconds(.11f);
                     foreach (GameObject obj in needleobj)
                         obj.SetActive(false);
                     break;
@@ -435,13 +439,15 @@ public class MultitaskScript : MonoBehaviour {
                         obj.SetActive(false);
                     break;
                 default:
-                    foreach (GameObject obj in needleobj)
-                        obj.SetActive(false);
                     foreach (GameObject obj in arrowobj)
                         obj.SetActive(false);
                     foreach (GameObject obj in gridobj)
                         obj.SetActive(false);
                     foreach (GameObject obj in matchobj)
+                        obj.SetActive(false);
+                    disablingNeedle = true;
+                    yield return new WaitForSeconds(.11f);
+                    foreach (GameObject obj in needleobj)
                         obj.SetActive(false);
                     Audio.PlaySoundAtTransform("Slam", transform);
                     break;
@@ -870,11 +876,11 @@ public class MultitaskScript : MonoBehaviour {
             needlebuttons[0].OnInteract();
             while (true)
             {
-                if (needleangle <= 0 || !active[0].Any(x => x))
+                if (needleangle <= 0 || disablingNeedle)
                 {
                     needlebuttons[0].OnInteractEnded();
                     needleup = 0;
-                    yield break; 
+                    yield   break; 
                 }
                 yield return null;
             }
@@ -887,7 +893,7 @@ public class MultitaskScript : MonoBehaviour {
             needlebuttons[1].OnInteract();
             while (true)
             {
-                if (needleangle >= 0 || !active[0].Any(x => x))
+                if (needleangle >= 0 || disablingNeedle)
                 {
                     needlebuttons[1].OnInteractEnded();
                     needleup = 0;

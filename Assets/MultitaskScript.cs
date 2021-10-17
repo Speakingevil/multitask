@@ -221,10 +221,6 @@ public class MultitaskScript : MonoBehaviour {
             speedMultiplier = 0.25f; //Default TP settings.
             speedInverse = 4;
             timerMultiplier = 1.5f;
-            for (int i = 0; i < 6; i++) 
-                ledcols[i] = new Material(ledcols[i]) { shader = Shader.Find("Unlit/Color") };
-            for (int i = 0; i < 2; i++)
-                onebit[i] = new Material(onebit[i]) { shader = Shader.Find("Unlit/Color") };
             foreach (Renderer rn in gridleds)
                 rn.transform.parent.gameObject.GetComponent<MeshRenderer>().material = glowGray;
         }
@@ -350,6 +346,8 @@ public class MultitaskScript : MonoBehaviour {
             countdowns[i] = Timer(i, (int)(timerMultiplier * 70));
             StartCoroutine(countdowns[i]);
         }
+        needleangle = Random.Range(0, 2) == 0 ? -1f : 1f;
+        needleobj[1].transform.localEulerAngles = new Vector3(90f, needleangle, 0f);
         while (hatchmove.Contains(true))
             yield return null;
         for (int i = (int)(timerMultiplier * 70); i > -1; i--)

@@ -222,7 +222,7 @@ public class MultitaskScript : MonoBehaviour {
             speedInverse = 4;
             timerMultiplier = 1.5f;
             foreach (Renderer rn in gridleds)
-                rn.transform.parent.gameObject.GetComponent<MeshRenderer>().material = glowGray;
+                rn.transform.parent.gameObject.GetComponent<MeshRenderer>().sharedMaterial = glowGray;
         }
         if (70 * timerMultiplier >= 100)
             timers[0].transform.localScale = new Vector3(0.0012f, 0.001f, 1);
@@ -306,11 +306,11 @@ public class MultitaskScript : MonoBehaviour {
                 StopCoroutine(arrows[i]);
                 active[1][i] = false;
                 for (int j = 0; j < 5; j++)
-                    arrowleds[(5 * i) + j].material = ledcols[0];
+                    arrowleds[(5 * i) + j].sharedMaterial = ledcols[0];
             }
             arrows[i] = Arrow(i);
             if (i > 4)
-                dodgeleds[i].material = ledcols[0];
+                dodgeleds[i].sharedMaterial = ledcols[0];
         }
         for (int j = 0; j < 25; j++)
         {
@@ -318,7 +318,7 @@ public class MultitaskScript : MonoBehaviour {
             {
                 StopCoroutine(grid[j]);
                 active[2][j] = false;
-                gridleds[j].material = ledcols[0];
+                gridleds[j].sharedMaterial = ledcols[0];
             }
             grid[j] = Grid(j);
         }
@@ -328,7 +328,7 @@ public class MultitaskScript : MonoBehaviour {
             if (i < 5)
             {
                 for (int j = 0; j < 5; j++)
-                    matchleds[(5 * i) + j].material = ledcols[0];
+                    matchleds[(5 * i) + j].sharedMaterial = ledcols[0];
             }
             if(i < 10)
                 active[3][i] = false;
@@ -546,11 +546,11 @@ public class MultitaskScript : MonoBehaviour {
                         StopCoroutine(arrows[i]);
                         active[1][i] = false;
                         for (int k = 0; k < 5; k++)
-                            arrowleds[(5 * i) + k].material = ledcols[0];
+                            arrowleds[(5 * i) + k].sharedMaterial = ledcols[0];
                     }
                     arrows[i] = Arrow(i);
                     if (i > 4)
-                        dodgeleds[i].material = ledcols[0];
+                        dodgeleds[i].sharedMaterial = ledcols[0];
                 }
                 break;
             case 2:
@@ -560,7 +560,7 @@ public class MultitaskScript : MonoBehaviour {
                     {
                         StopCoroutine(grid[j]);
                         active[2][j] = false;
-                        gridleds[j].material = ledcols[0];
+                        gridleds[j].sharedMaterial = ledcols[0];
                     }
                     grid[j] = Grid(j);
                 }
@@ -572,7 +572,7 @@ public class MultitaskScript : MonoBehaviour {
                     if (i < 5)
                     {
                         for (int j = 0; j < 5; j++)
-                            matchleds[(5 * i) + j].material = ledcols[0];
+                            matchleds[(5 * i) + j].sharedMaterial = ledcols[0];
                     }
                     if(i < 10)
                         active[3][i] = false;
@@ -640,21 +640,21 @@ public class MultitaskScript : MonoBehaviour {
     {
         Audio.PlaySoundAtTransform("Sharp", transform);
         float waittime = speedInverse * Random.Range(1.5f, 2.5f);
-        arrowleds[5 * k + 4].material = ledcols[5];
+        arrowleds[5 * k + 4].sharedMaterial = ledcols[5];
         for (int i = 4; i > 0; i--)
         {
             yield return new WaitForSeconds(waittime);
-            arrowleds[(5 * k) + i].material = ledcols[0];
-            arrowleds[(5 * k) + i - 1].material = ledcols[i];
+            arrowleds[(5 * k) + i].sharedMaterial = ledcols[0];
+            arrowleds[(5 * k) + i - 1].sharedMaterial = ledcols[i];
         }
         yield return new WaitForSeconds(waittime);
         for (int i = 0; i < 5; i++)
-            arrowleds[5 * k + i].material = ledcols[1];
-        dodgeleds[(k % 5) + 5].material = ledcols[1];
+            arrowleds[5 * k + i].sharedMaterial = ledcols[1];
+        dodgeleds[(k % 5) + 5].sharedMaterial = ledcols[1];
         yield return new WaitForSeconds(0.1f);
         for (int i = 0; i < 5; i++)
-            arrowleds[5 * k + i].material = ledcols[0];
-        dodgeleds[(k % 5) + 5].material = ledcols[0];
+            arrowleds[5 * k + i].sharedMaterial = ledcols[0];
+        dodgeleds[(k % 5) + 5].sharedMaterial = ledcols[0];
         active[1][k] = false;
         Audio.PlaySoundAtTransform("Laser", transform);
         if (arrowled == k % 5)
@@ -669,11 +669,11 @@ public class MultitaskScript : MonoBehaviour {
                     StopCoroutine(arrows[i]);
                     active[1][i] = false;
                     for (int j = 0; j < 5; j++)
-                        arrowleds[(5 * i) + j].material = ledcols[0];
+                        arrowleds[(5 * i) + j].sharedMaterial = ledcols[0];
                 }
                 arrows[i] = Arrow(i);
                 if (i > 4)
-                    dodgeleds[i].material = ledcols[0];
+                    dodgeleds[i].sharedMaterial = ledcols[0];
             }
             if (!final.Contains(true))
             {
@@ -694,17 +694,17 @@ public class MultitaskScript : MonoBehaviour {
             {
                 arrowbuttons[0].AddInteractionPunch(0.25f);
                 Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.BigButtonPress, transform);
-                dodgeleds[arrowled].material = onebit[0];
+                dodgeleds[arrowled].sharedMaterial = onebit[0];
                 arrowled--;
-                dodgeleds[arrowled].material = onebit[1];
+                dodgeleds[arrowled].sharedMaterial = onebit[1];
             }
             else if (!up && arrowled < 4)
             {
                 arrowbuttons[1].AddInteractionPunch(0.25f);
                 Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.BigButtonPress, transform);
-                dodgeleds[arrowled].material = onebit[0];
+                dodgeleds[arrowled].sharedMaterial = onebit[0];
                 arrowled++;
-                dodgeleds[arrowled].material = onebit[1];
+                dodgeleds[arrowled].sharedMaterial = onebit[1];
             }
         }
     }
@@ -714,11 +714,11 @@ public class MultitaskScript : MonoBehaviour {
         active[2][g] = true;
         Audio.PlaySoundAtTransform("Alert", transform);
         float waittime = speedInverse * (final[2] ? 2 : 2.4f);
-        gridleds[g].material = ledcols[5];
+        gridleds[g].sharedMaterial = ledcols[5];
         for (int i = 0; i < 5; i++)
         {
             yield return new WaitForSeconds(waittime);
-            gridleds[g].material = ledcols[4 - i];
+            gridleds[g].sharedMaterial = ledcols[4 - i];
         }
         active[2][g] = false;
         module.HandleStrike();
@@ -729,7 +729,7 @@ public class MultitaskScript : MonoBehaviour {
             {
                 StopCoroutine(grid[i]);
                 active[2][i] = false;
-                gridleds[i].material = ledcols[0];
+                gridleds[i].sharedMaterial = ledcols[0];
             }
             grid[i] = Grid(i);
         }
@@ -752,7 +752,7 @@ public class MultitaskScript : MonoBehaviour {
             {
                 StopCoroutine(grid[i]);
                 grid[i] = Grid(i);
-                gridleds[i].material = ledcols[0];
+                gridleds[i].sharedMaterial = ledcols[0];
                 active[2][i] = false;
             }
             else
@@ -765,7 +765,7 @@ public class MultitaskScript : MonoBehaviour {
                     {
                         StopCoroutine(grid[j]);
                         active[2][j] = false;
-                        gridleds[j].material = ledcols[0];
+                        gridleds[j].sharedMaterial = ledcols[0];
                     }
                     grid[j] = Grid(j);
                 }
@@ -790,15 +790,15 @@ public class MultitaskScript : MonoBehaviour {
         for (int i = 0; i < 5; i++)
         {
             if (i > 0)
-                matchleds[(5 * k) + i - 1].material = ledcols[0];
+                matchleds[(5 * k) + i - 1].sharedMaterial = ledcols[0];
             if (active[0][3])
-                matchleds[(5 * k) + i].material = ledcols[k + 1];
+                matchleds[(5 * k) + i].sharedMaterial = ledcols[k + 1];
             yield return new WaitForSeconds(speedInverse * (final[3] ? 1.2f : 1.6f));
         }
-        matchleds[(5 * k) + 4].material = ledcols[0];
-        matchbar[1].material = ledcols[k + 1];
+        matchleds[(5 * k) + 4].sharedMaterial = ledcols[0];
+        matchbar[1].sharedMaterial = ledcols[k + 1];
         yield return new WaitForSeconds(0.1f);
-        matchbar[1].material = ledcols[0];
+        matchbar[1].sharedMaterial = ledcols[0];
         if(d < 10)
             active[3][(5 * m) + k] = false;
         match[d] = Match(d);
@@ -815,7 +815,7 @@ public class MultitaskScript : MonoBehaviour {
                     if (i < 5)
                     {                       
                         for (int j = 0; j < 5; j++)
-                            matchleds[(5 * i) + j].material = ledcols[0];
+                            matchleds[(5 * i) + j].sharedMaterial = ledcols[0];
                     }
                     if(i < 10)
                          active[3][i] = false;
@@ -843,7 +843,7 @@ public class MultitaskScript : MonoBehaviour {
             matchbuttons[i].AddInteractionPunch(0.75f);
             Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
             matchcol = i;
-            matchbar[0].material = ledcols[i + 1];
+            matchbar[0].sharedMaterial = ledcols[i + 1];
         }
     }
 
@@ -978,7 +978,7 @@ public class MultitaskScript : MonoBehaviour {
             int[] arrowPositions = Enumerable.Repeat(0, 10).ToArray();
             for (int i = 0; i < 10; i++)
                 for (int j = 0; j < 5; j++)  //Goes through each row of LEDs and determines how far away the signals are from the led.
-                    arrowPositions[i] += Array.IndexOf(ledcols.Select(x => x.name).ToArray(), arrowleds[5 * i + j].material.name.TakeWhile(x => x != ' ').Join(""));
+                    arrowPositions[i] += Array.IndexOf(ledcols, arrowleds[5 * i + j].sharedMaterial);
             for (int i = 0; i < 10; i++)
                 if (arrowPositions[i] == 0)
                     arrowPositions[i] = 6; //Empty spaces are always the highest priority. 
@@ -1018,7 +1018,7 @@ public class MultitaskScript : MonoBehaviour {
             int[] ledPositions = Enumerable.Repeat(-1, 5).ToArray();
             for (int i = 0; i < 5; i++)
                 for (int j = 0; j < 5; j++) //For each column, go through the row and if there's an LED lit, set the column'th position of an array to its closeness value.
-                    if (matchleds[5 * i + j].material.name != "K (Instance)")
+                    if (matchleds[5 * i + j].sharedMaterial.name != "K")
                         ledPositions[i] = j;
             int highestPriority = Enumerable.Range(0, 5).OrderBy(x => ledPositions[x]).Last();
             yield return new WaitForSeconds(0.1f);

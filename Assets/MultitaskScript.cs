@@ -886,9 +886,9 @@ public class MultitaskScript : MonoBehaviour
         List<string> parameters = command.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
         if (command == "LEFT" || command == "L")
         {
-            if (!active[0].Any(x => x))
-                yield break;
             yield return null;
+            if (!active[0][0])
+                yield break;
             needlebuttons[0].OnInteract();
             while (true)
             {
@@ -903,9 +903,9 @@ public class MultitaskScript : MonoBehaviour
         }
         else if (command == "RIGHT" || command == "R")
         {
-            if (!active[0].Any(x => x))
-                yield break;
             yield return null;
+            if (!active[0][0])
+                yield break;
             needlebuttons[1].OnInteract();
             while (true)
             {
@@ -921,6 +921,8 @@ public class MultitaskScript : MonoBehaviour
         else if (Regex.IsMatch(command, @"^(U(?:P)?|D(?:OWN)?)\s+[1-4]$"))
         {
             yield return null;
+            if (!active[0][1])
+                yield break;
             for (int i = 0; i < command.Last() - '0'; i++)
             {
                 arrowbuttons[command.First() == 'U' ? 0 : 1].OnInteract();
@@ -941,6 +943,8 @@ public class MultitaskScript : MonoBehaviour
         else if (Regex.IsMatch(command, @"^(?:P(?:RESS)?\s+)?[1-5]$"))
         {
             yield return null;
+            if (!active[0][3])
+                yield break;
             matchbuttons[command.Last() - '1'].OnInteract();
             yield return new WaitForSeconds(0.1f);
         }
@@ -966,7 +970,7 @@ public class MultitaskScript : MonoBehaviour
     {
         while (!moduleSolved)
         {
-            while (!active[0].Any(x => x))
+            while (!active[0][0])
                 yield return null;
             if (needleangle > 30)
             {
@@ -1031,7 +1035,7 @@ public class MultitaskScript : MonoBehaviour
     {
         while (!moduleSolved)
         {
-            while (!active[0].Any(x => x))
+            while (!active[0][3])
                 yield return null;
             int[] ledPositions = Enumerable.Repeat(-1, 5).ToArray();
             for (int i = 0; i < 5; i++)
@@ -1043,7 +1047,6 @@ public class MultitaskScript : MonoBehaviour
             if (matchcol != highestPriority)
             {
                 matchbuttons[highestPriority].OnInteract(); //Press the button whose signal is the closest. The closest (maximum) value goes to the end of the orderby.
-                Debug.LogFormat("{0}", ledcols[highestPriority + 1]);
             }
         }
     }

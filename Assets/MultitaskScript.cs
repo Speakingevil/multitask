@@ -6,7 +6,8 @@ using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class MultitaskScript : MonoBehaviour {
+public class MultitaskScript : MonoBehaviour
+{
 
     public KMAudio Audio;
     public KMBombModule module;
@@ -48,6 +49,7 @@ public class MultitaskScript : MonoBehaviour {
     private int lastactive = 2;
     private int arrowled = 2;
     private int matchcol;
+    private bool[] matchLedArr = new bool[25];
 
     private bool[] final = new bool[4];
     private bool start;
@@ -115,7 +117,7 @@ public class MultitaskScript : MonoBehaviour {
             minmoduleID = moduleIDCounter;
         }
         moduleID = moduleIDCounter++;
-        module.OnActivate = Activate;      
+        module.OnActivate = Activate;
         for (int i = 0; i < 10; i++)
             arrows[i] = Arrow(i);
         for (int i = 0; i < 25; i++)
@@ -282,12 +284,12 @@ public class MultitaskScript : MonoBehaviour {
                 countdowns[task + 1] = Timer(task, timeset);
                 timers[task + 1].text = timeset.ToString();
                 StartCoroutine(countdowns[task + 1]);
-                StartCoroutine(tasks[task]);                    
+                StartCoroutine(tasks[task]);
             }
-            
+
             yield return new WaitForSeconds(0.5f);
         }
-        for(int i = 1; i < 5; i++)
+        for (int i = 1; i < 5; i++)
         {
             hatches[2 * i].transform.localScale = new Vector3(1.02f, 1, 1);
             hatches[2 * i].transform.localPosition = new Vector3(0, 3.7f, 0);
@@ -296,7 +298,7 @@ public class MultitaskScript : MonoBehaviour {
         for (int j = 0; j < 4; j++)
         {
             active[0][j] = false;
-            timers[j + 1].text = string.Empty;         
+            timers[j + 1].text = string.Empty;
             tasks[j] = j == 0 ? Needle() : Task(j);
         }
         for (int i = 0; i < 10; i++)
@@ -328,9 +330,12 @@ public class MultitaskScript : MonoBehaviour {
             if (i < 5)
             {
                 for (int j = 0; j < 5; j++)
+                {
                     matchleds[(5 * i) + j].sharedMaterial = ledcols[0];
+                    matchLedArr[(5 * i) + j] = false;
+                }
             }
-            if(i < 10)
+            if (i < 10)
                 active[3][i] = false;
             match[i] = Match(i);
         }
@@ -370,8 +375,8 @@ public class MultitaskScript : MonoBehaviour {
             hatchmove[hatch - 1] = true;
         if (up)
         {
-            if(moduleID + 1 == moduleIDCounter && !final.Contains(true))
-                 Audio.PlaySoundAtTransform("HatchOpen", transform);
+            if (moduleID + 1 == moduleIDCounter && !final.Contains(true))
+                Audio.PlaySoundAtTransform("HatchOpen", transform);
             yield return null;
             switch (hatch)
             {
@@ -412,7 +417,7 @@ public class MultitaskScript : MonoBehaviour {
         }
         if (!start)
             start = true;
-        if(hatch > 0)
+        if (hatch > 0)
             hatchmove[hatch - 1] = false;
         if (!up)
         {
@@ -499,7 +504,7 @@ public class MultitaskScript : MonoBehaviour {
                     {
                         yield return null;
                     }
-                    int[] matchrand = new int[2] { Random.Range(0, 2), Random.Range(0, 5)};
+                    int[] matchrand = new int[2] { Random.Range(0, 2), Random.Range(0, 5) };
                     if (matchrand[0] == 0)
                     {
                         if (active[3][matchrand[1]])
@@ -508,7 +513,7 @@ public class MultitaskScript : MonoBehaviour {
                             matchrand[1] += 5;
                         StartCoroutine(match[matchrand[1]]);
                     }
-                    yield return new WaitForSeconds(speedInverse * ( matchrand[0] == 0 ? (final[3] ? 2.4f : 3.2f) : final[3] ? 1.2f : 1.6f));
+                    yield return new WaitForSeconds(speedInverse * (matchrand[0] == 0 ? (final[3] ? 2.4f : 3.2f) : final[3] ? 1.2f : 1.6f));
                 }
                 break;
         }
@@ -525,7 +530,7 @@ public class MultitaskScript : MonoBehaviour {
             if (!final.Contains(true))
                 timers[t + 1].text = i < 10 ? "0" + i.ToString() : i.ToString();
             yield return new WaitForSeconds(1);
-        }      
+        }
         timers[t + 1].text = string.Empty;
         StopCoroutine(tasks[t]);
         if (!final.Contains(true))
@@ -572,9 +577,12 @@ public class MultitaskScript : MonoBehaviour {
                     if (i < 5)
                     {
                         for (int j = 0; j < 5; j++)
+                        {
                             matchleds[(5 * i) + j].sharedMaterial = ledcols[0];
+                            matchLedArr[(5 * i) + j] = false;
+                        }
                     }
-                    if(i < 10)
+                    if (i < 10)
                         active[3][i] = false;
                     match[i] = Match(i);
                 }
@@ -679,7 +687,7 @@ public class MultitaskScript : MonoBehaviour {
             {
                 StopCoroutine(tasks[1]);
                 StopCoroutine(countdowns[2]);
-                timers[2].text = string.Empty;              
+                timers[2].text = string.Empty;
                 StartCoroutine(HatchMove(2, false));
             }
         }
@@ -737,7 +745,7 @@ public class MultitaskScript : MonoBehaviour {
         {
             StopCoroutine(tasks[2]);
             StopCoroutine(countdowns[3]);
-            timers[3].text = string.Empty;         
+            timers[3].text = string.Empty;
             StartCoroutine(HatchMove(3, false));
         }
     }
@@ -773,7 +781,7 @@ public class MultitaskScript : MonoBehaviour {
                 {
                     StopCoroutine(tasks[2]);
                     StopCoroutine(countdowns[3]);
-                    timers[3].text = string.Empty;                
+                    timers[3].text = string.Empty;
                     StartCoroutine(HatchMove(3, false));
                 }
             }
@@ -784,22 +792,29 @@ public class MultitaskScript : MonoBehaviour {
     {
         int k = d % 5;
         int m = d / 5;
-        if(d < 10)
+        if (d < 10)
             active[3][(5 * m) + k] = true;
         Audio.PlaySoundAtTransform("SegSelect" + (k + 1).ToString(), transform);
         for (int i = 0; i < 5; i++)
         {
             if (i > 0)
+            {
                 matchleds[(5 * k) + i - 1].sharedMaterial = ledcols[0];
+                matchLedArr[(5 * k) + i - 1] = false;
+            }
             if (active[0][3])
+            {
                 matchleds[(5 * k) + i].sharedMaterial = ledcols[k + 1];
+                matchLedArr[(5 * k) + i] = true;
+            }
             yield return new WaitForSeconds(speedInverse * (final[3] ? 1.2f : 1.6f));
         }
         matchleds[(5 * k) + 4].sharedMaterial = ledcols[0];
+        matchLedArr[(5 * k) + 4] = false;
         matchbar[1].sharedMaterial = ledcols[k + 1];
         yield return new WaitForSeconds(0.1f);
         matchbar[1].sharedMaterial = ledcols[0];
-        if(d < 10)
+        if (d < 10)
             active[3][(5 * m) + k] = false;
         match[d] = Match(d);
         if (active[0][3])
@@ -813,12 +828,15 @@ public class MultitaskScript : MonoBehaviour {
                 {
                     StopCoroutine(match[i]);
                     if (i < 5)
-                    {                       
+                    {
                         for (int j = 0; j < 5; j++)
+                        {
                             matchleds[(5 * i) + j].sharedMaterial = ledcols[0];
+                            matchLedArr[(5 * k) + j] = false;
+                        }
                     }
-                    if(i < 10)
-                         active[3][i] = false;
+                    if (i < 10)
+                        active[3][i] = false;
                     match[i] = Match(i);
                 }
                 if (!final.Contains(true))
@@ -859,7 +877,7 @@ public class MultitaskScript : MonoBehaviour {
 
 #pragma warning disable 414
     private readonly string TwitchHelpMessage = @"Use <!{0} left/right> to move the Pressure Gauge in that direction. Use <!{0} up/down 1-4> to move the Avoidance pawn that many spaces in that direction. Use <!{0} press A1 B2 C3 D4 E5> to press those cells in the Selection Grid. Use <!{0} press 1-5> to press that Signal Jammer button from left to right. On TP, all animations are 3 times slower and all timers last twice as long.";
-    #pragma warning restore 414
+#pragma warning restore 414
 
     IEnumerator ProcessTwitchCommand(string command)
     {
@@ -878,7 +896,7 @@ public class MultitaskScript : MonoBehaviour {
                 {
                     needlebuttons[0].OnInteractEnded();
                     needleup = 0;
-                    yield   break; 
+                    yield break;
                 }
                 yield return null;
             }
@@ -930,7 +948,7 @@ public class MultitaskScript : MonoBehaviour {
 
     void TwitchHandleForcedSolve()
     { //If we set the return of the autosolve method to void, it'll get called instantly upon running !solvebomb. This will avoid multitask accumulating strikes if solvebomb is ran without.
-        speedMultiplier = 3; //Just for funsies. Sets the timer to triple speed for the autosolver
+        speedMultiplier = 1; //Just for funsies. Sets the timer to triple speed for the autosolver
         speedInverse = 0.333f;
         StartCoroutine(BeginAutosolve());
     }
@@ -1018,12 +1036,15 @@ public class MultitaskScript : MonoBehaviour {
             int[] ledPositions = Enumerable.Repeat(-1, 5).ToArray();
             for (int i = 0; i < 5; i++)
                 for (int j = 0; j < 5; j++) //For each column, go through the row and if there's an LED lit, set the column'th position of an array to its closeness value.
-                    if (matchleds[5 * i + j].sharedMaterial.name != "K")
+                    if (matchLedArr[5 * i + j])
                         ledPositions[i] = j;
             int highestPriority = Enumerable.Range(0, 5).OrderBy(x => ledPositions[x]).Last();
             yield return new WaitForSeconds(0.1f);
             if (matchcol != highestPriority)
+            {
                 matchbuttons[highestPriority].OnInteract(); //Press the button whose signal is the closest. The closest (maximum) value goes to the end of the orderby.
+                Debug.LogFormat("{0}", ledcols[highestPriority + 1]);
+            }
         }
     }
 
